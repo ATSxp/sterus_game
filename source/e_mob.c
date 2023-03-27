@@ -8,6 +8,7 @@
 
 void E_common(Mob *m);
 void E_mobVsBullet(Mob *m, Bullet *b);
+void E_updateMove(Mob *m);
 
 const struct MobTemplate g_mob_template[MOB_TOTAL] = {
   /*
@@ -46,16 +47,29 @@ void E_initMob(enum MobIds id, int x, int y) {
   m->id = id;
   m->w = t->w;
   m->h = t->h;
+  m->move_type = MOB_MOVE_NORMAL;//t->move_type;
   m->pos.x = x << 8;
   m->pos.y = y << 8;
+  m->speed = 0x080;
   m->spr = T_addObj(x, y, t->size, t->tid, t->pal, 1, t->gfx);
+
+  if (m->move_type == MOB_MOVE_NORMAL) {
+    m->dy = m->speed;
+  } else if (m->move_type == MOB_MOVE_ZIGZAG) {
+    m->dx = m->speed + 0x0100;
+    m->dy = m->speed - 0x020;
+  } else if (m->move_type == MOB_MOVE_GO) {
+    m->dx = m->speed + 0x0100;
+    m->dy = m->speed - 0x030;
+  }
+
 }
 
 void E_updateMob(Mob *m) {
+  if (m->dead) return;
+
   int ii;
   POINT32 pt = {m->pos.x >> 8, m->pos.y >> 8};
-
-  if (m->dead) return;
 
   if (pt.x < - (int)m->w || pt.x > SCREEN_WIDTH || 
       pt.y > SCREEN_HEIGHT) {
@@ -67,6 +81,8 @@ void E_updateMob(Mob *m) {
 
   if (g_mob_template[m->id].run) 
     g_mob_template[m->id].run(m);
+
+  E_updateMove(m);
 
   m->pos.x += m->dx;
   m->pos.y += m->dy;
@@ -85,10 +101,17 @@ void E_mobVsBullet(Mob *m, Bullet *b) {
 
 }
 
+void E_updateMove(Mob *m) {
+  if (m->move_type == MOB_MOVE_ZIGZAG) {
+    if ((m->spr->x < 0 && m->dx < 0) ||
+        (m->spr->x > SCREEN_WIDTH - 16 && m->dx > 0))
+      m->dx = -m->dx;
+  }
+
+}
+
 /*
- Enemys updaters
+  Enemys updaters
 */
 
-void E_common(Mob *m) {
-  m->dy = 0x080;
-}
+void E_common(Mob *m) {}

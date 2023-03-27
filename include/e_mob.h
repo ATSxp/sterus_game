@@ -6,15 +6,21 @@
 
 #define MOB_MAX 50
 
+#define MOB_MOVE_NORMAL 0x00
+#define MOB_MOVE_ZIGZAG 0x01
+#define MOB_MOVE_GO     0x02
+
+#define MOB_IDLE 0x00
+
 enum MobIds {
   MOB_ID_COMMON,
   MOB_TOTAL
 };
 
 typedef struct {
-  u8 id;
+  u8 id, state, move_type;
   POINT32 pos;
-  FIXED dx, dy;
+  FIXED dx, dy, speed;
   u32 w, h;
   BOOL dead;
   TSprite *spr;

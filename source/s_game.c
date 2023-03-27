@@ -20,7 +20,7 @@ void updateGame() {
 
   // Tmp
   if (key_hit(KEY_B)) {
-    E_initMob(MOB_ID_COMMON, qran_range(0, 240-16), -16);
+    E_initMob(MOB_ID_COMMON, 240 >> 1, -16);
   }
   
   E_updatePlayer(&g_player);
