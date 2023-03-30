@@ -38,6 +38,9 @@ void E_initPlayer(Player *p) {
   bullet_count = 0;
 
   initPlayerBullet(p);
+
+  A_initAnim(&p->anims[PLAYER_STATE_IDLE], GET_ANIM(ANIM_SHIP_IDLE), 2, 0x080, TRUE, 0);
+  A_initAnim(&p->anims[PLAYER_STATE_WALK], GET_ANIM(ANIM_SHIP_WALK), 2, 0x080, TRUE, 0);
 }
 
 void E_updatePlayer(Player *p) {
@@ -59,6 +62,15 @@ void E_updatePlayer(Player *p) {
     p->dx = 0;
   }
 
+  if (p->dx != 0x00 || p->dy != 0x00)
+    p->state = PLAYER_STATE_WALK;
+  else
+    p->state = PLAYER_STATE_IDLE;
+
+  T_flipObj(p->spr, p->dx < 0x00, FALSE);
+
+
+  A_updateAnim(&p->anims[p->state], p->spr);
   updatePlayerBullet(p);
 
   p->pos.x += p->dx;

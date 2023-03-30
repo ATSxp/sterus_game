@@ -3,6 +3,7 @@
 
 #include "engine/gba.h"
 #include "e_bullet.h"
+#include "anim.h"
 
 #define MOB_MAX 50
 
@@ -10,7 +11,8 @@
 #define MOB_MOVE_ZIGZAG 0x01
 #define MOB_MOVE_GO     0x02
 
-#define MOB_IDLE 0x00
+#define MOB_STATE_IDLE 0x00
+#define MOB_STATE_WALK 0x01
 
 enum MobIds {
   MOB_ID_COMMON,
@@ -24,6 +26,8 @@ typedef struct {
   u32 w, h;
   BOOL dead;
   TSprite *spr;
+  Anim anims[3];
+  u32 max_bullets;
 } Mob;
 
 typedef void (* fnptrMob)(Mob *);
@@ -32,6 +36,9 @@ struct MobTemplate {
   u16 tid, pal, size;
   u32 w, h;
   TGfx *gfx;
+  u32 max_bullet;
+  BOOL shoot;
+  fnptrMob init;
   fnptrMob run;
 };
 

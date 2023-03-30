@@ -3,8 +3,12 @@
 
 #include "engine/gba.h"
 #include "e_bullet.h"
+#include "anim.h"
 
 #define PLAYER_MAX_BULLET 8
+
+#define PLAYER_STATE_IDLE 0x00
+#define PLAYER_STATE_WALK 0x01
 
 typedef struct {
   POINT32 pos;
@@ -13,6 +17,8 @@ typedef struct {
   u32 hp;
   TSprite *spr;
   Bullet b[PLAYER_MAX_BULLET];
+  Anim anims[3];
+  u8 state;
   BOOL dead;
 } Player;
 

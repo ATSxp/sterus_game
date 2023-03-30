@@ -98,12 +98,16 @@ void T_updateObjs(BOOL sort) {
 
   for (ii = 0; ii < SPR_MAX; ii++) {
     obj = &spr_buffer[spr->id].obj;
-    T_setPosObj(spr, spr->x, spr->y);
 
     if (spr->active)
-      *keys++ = spr->y + ((obj->attr0 & ATTR0_MODE_MASK) & ATTR0_HIDE);
-    else
-      *keys++ = 1000;
+      T_setPosObj(spr, spr->x, spr->y);
+
+    if (sort) {
+      if ((obj->attr0 & ATTR0_MODE_MASK) != ATTR0_HIDE)
+        *keys++ = spr->y + BFN_GET(obj->attr2, ATTR2_PRIO);
+      else
+        *keys++ = 0x7FFFFFFF;
+    }
 
     spr++;
   }

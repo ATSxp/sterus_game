@@ -6,22 +6,28 @@
 
 #define MOB_TID_BASE 16
 
-void E_common(Mob *m);
+void E_initCommon(Mob *m);
+void E_updateCommon(Mob *m);
+
 void E_mobVsBullet(Mob *m, Bullet *b);
 void E_updateMove(Mob *m);
 
 const struct MobTemplate g_mob_template[MOB_TOTAL] = {
   /*
-    Tile id, Palette Bank, Object Size, 
-    Width, Height, 
-    Gfx, 
-    Callback
+    Tile id, Palette Bank, Object Size
+    Width, Height
+    Gfx
+    Max Bullets
+    Can Shoot
+    Init Callback, Update Callback
   */
   {
     MOB_TID_BASE, 0, OBJ_16X16, 
     16, 16, 
     SET_GFX_OBJ(FALSE, gfx_enemy_n), 
-    E_common
+    5, 
+    FALSE, 
+    E_initCommon, E_updateCommon
   },
 
 };
@@ -53,6 +59,8 @@ void E_initMob(enum MobIds id, int x, int y) {
   m->speed = 0x080;
   m->spr = T_addObj(x, y, t->size, t->tid, t->pal, 1, t->gfx);
 
+  if (t->init) t->init(m);
+
   if (m->move_type == MOB_MOVE_NORMAL) {
     m->dy = m->speed;
   } else if (m->move_type == MOB_MOVE_ZIGZAG) {
@@ -82,6 +90,12 @@ void E_updateMob(Mob *m) {
   if (g_mob_template[m->id].run) 
     g_mob_template[m->id].run(m);
 
+  if (m->dx != 0x00 || m->dy != 0x00)
+    m->state = MOB_STATE_WALK;
+  else
+    m->state = MOB_STATE_IDLE;
+
+  A_updateAnim(&m->anims[MOB_STATE_WALK], m->spr);
   E_updateMove(m);
 
   m->pos.x += m->dx;
@@ -111,7 +125,12 @@ void E_updateMove(Mob *m) {
 }
 
 /*
-  Enemys updaters
+  Enemys Callback
 */
 
-void E_common(Mob *m) {}
+// Enemy Common
+void E_initCommon(Mob *m) {
+  A_initAnim(&m->anims[MOB_STATE_WALK], GET_ANIM(ANIM_E_COMMON_WALK), 2, 0x080, TRUE, MOB_TID_BASE);
+}
+
+void E_updateCommon(Mob *m) {}
