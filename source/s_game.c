@@ -17,10 +17,9 @@ void initGame() {
 }
 
 void updateGame() {
-
   // Tmp
   if (key_hit(KEY_B)) {
-    E_initMob(MOB_ID_COMMON, qran_range(0, 240-16), -16);
+    E_initMob(MOB_ID_COMMON, qran_range(0, 240 - 16), -16);
   }
   
   E_updatePlayer(&g_player);
@@ -28,6 +27,8 @@ void updateGame() {
   T_updateObjs(FALSE);
 }
 
-void endGame() {}
+void endGame() {
+  clearBullets(g_player.b, 8);
+}
 
 Scene g_scene_game = {initGame, updateGame, endGame};

@@ -2,11 +2,10 @@
 
 #define SPR_MAX 128
 
-u32 spr_count = 0;
-
 TSprite spr_buffer[128];
 
-u32 unussed_ids_count = 0;
+u8 g_spr_count;
+u8 g_unussed_ids_count;
 u8 unussed_ids[128];
 
 int sort_keys[128];
@@ -40,7 +39,10 @@ INLINE u16 _getShapeFromSize(u16 size);
 void _setGfxObj(TSprite *spr, TGfx *gfx, u16 tid);
 
 void T_initObjs() {
-  u32 ii;
+  int ii;
+  g_spr_count = 0;
+  g_unussed_ids_count = 0;
+
   for (ii = 0; ii < SPR_MAX; ii++) {
     spr_buffer[ii].id = sort_ids[ii] = ii;
     obj_hide(&spr_buffer[ii].obj);
@@ -51,18 +53,21 @@ void T_initObjs() {
 TSprite *T_addObj(int x, int y, u16 size, u16 tid, u16 pb, u16 prio, TGfx *gfx) {
   TSprite *spr;
   OBJ_ATTR *obj;
-  u8 un_id = unussed_ids[unussed_ids_count - 1];
-  u8 id = unussed_ids_count > 0 ? un_id : spr_count;
+  u8 id, un_id = unussed_ids[g_unussed_ids_count - 1];
 
-  if (spr_count >= SPR_MAX)
+  if (g_spr_count >= SPR_MAX)
     return NULL;
+
+  if (g_unussed_ids_count > 0) {
+    id = un_id;
+    g_unussed_ids_count--;
+  } else
+    id = g_spr_count;
 
   spr = &spr_buffer[id];
   obj = &spr_buffer[id].obj;
 
-  if (unussed_ids_count > 0) unussed_ids_count--;
-
-  spr_count++;
+  g_spr_count++;
 
   spr->active = TRUE;
 
@@ -80,14 +85,16 @@ TSprite *T_addObj(int x, int y, u16 size, u16 tid, u16 pb, u16 prio, TGfx *gfx) 
 
 void T_removeObj(TSprite *spr) {
   if (!spr->active) return;
-
-  unussed_ids[unussed_ids_count++] = spr->id;
-
-  spr_buffer[spr->id].obj = (OBJ_ATTR){0, 0, 0};
-  obj_hide(&spr_buffer[spr->id].obj);
   spr->active = FALSE;
 
-  spr_count--;
+  if (g_unussed_ids_count < SPR_MAX)
+    unussed_ids[g_unussed_ids_count++] = spr->id;
+
+  spr->obj = (OBJ_ATTR){0, 0, 0, 0};
+  obj_hide(&spr->obj);
+
+  if (g_spr_count > 0)
+    g_spr_count--;
 }
 
 void T_updateObjs(BOOL sort) {
@@ -117,10 +124,10 @@ void T_updateObjs(BOOL sort) {
 
     for (ii = 0; ii < SPR_MAX; ii++)
       oam_copy(&oam_mem[ii], &spr_buffer[sort_ids[ii]].obj, 1);
-  } else {
+  } else
     for (ii = 0; ii < SPR_MAX; ii++)
       oam_copy(&oam_mem[ii], &spr_buffer[ii].obj, 1);
-  }
+
 }
 
 BOOL T_objVsObj(TSprite *s, TSprite *s2) {

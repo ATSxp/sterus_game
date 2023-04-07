@@ -40,7 +40,7 @@ typedef struct {
 } TSprite;
 
 extern TSprite spr_buffer[128];
-extern u32 spr_count, spr_max;
+extern u8 g_spr_count, g_unussed_ids_count;
 
 INLINE void T_setTileObj(TSprite *spr, u16 id);
 INLINE void T_setPalBankObj(TSprite *spr, u16 pb);

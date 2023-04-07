@@ -13,6 +13,8 @@
 
 #define MOB_STATE_IDLE 0x00
 #define MOB_STATE_WALK 0x01
+#define MOB_STATE_DEAD 0x02
+#define MOB_STATE_DELETED 0x0FF
 
 enum MobIds {
   MOB_ID_COMMON,
@@ -24,10 +26,18 @@ typedef struct {
   POINT32 pos;
   FIXED dx, dy, speed;
   u32 w, h;
+  int hp;
   BOOL dead;
+
   TSprite *spr;
   Anim anims[3];
+
+  // Bullets
+  Bullet bull[8];
   u32 max_bullets;
+  u8 bullet_count;
+  FIXED bullet_max_timer, bullet_timer;
+  BOOL init_bullets;
 } Mob;
 
 typedef void (* fnptrMob)(Mob *);
@@ -64,17 +74,17 @@ INLINE void E_initAllMobs() {
 
 INLINE void E_updateAllMobs() {
   int ii;
-  for (ii = 0; ii < MOB_MAX; ii++) {
+  for (ii = 0; ii < MOB_MAX; ii++)
     E_updateMob(&g_mobs[ii]);
-  }
 
 }
 
 INLINE void E_removeMob(Mob *m) {
   if (!m->dead) {
     m->dead = TRUE;
-    T_removeObj(m->spr);
+    m->state = MOB_STATE_DEAD;
     g_mob_count--;
+
   }
 
 }

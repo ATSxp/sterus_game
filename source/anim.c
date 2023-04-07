@@ -8,14 +8,17 @@ void A_updateAnim(Anim *a, TSprite *spr) {
     return;
   }
 
-  if (a->cur_frame >= (a->length - 1))
+  if (a->cur_frame >= (a->length - 1)) {
     a->end = TRUE;
-  else
+  } else {
     a->end = FALSE;
+  }
 
   a->ticks += a->speed;
 
-  if ((a->ticks & ((8 << 8) - 1)) == 0x00) {
+  if (a->ticks >= 0x0800) {
+    a->ticks = 0x00;
+
     if (a->loop)
       a->cur_frame = (a->cur_frame + 1) % a->length;
     else
@@ -30,4 +33,5 @@ cu16 *g_anims[ANIM_TOTAL] = {
   LEN_F(2){0, 4},
   LEN_F(2){8, 12},
   LEN_F(2){0, 4},
+  LEN_F(14){64, 68, 72, 76, 80, 84, 88, 92, 96, 100, 104, 108, 112, 116},
 };

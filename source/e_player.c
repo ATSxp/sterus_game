@@ -1,8 +1,11 @@
+#include <string.h>
+
 #include "e_player.h"
 #include "e_bullet.h"
 
 #include "gfx_player.h"
 #include "gfx_bull_p01.h"
+#include "gfx_explo.h"
 
 #define PLAYER_INIT_X 0x07000
 #define PLAYER_INIT_Y 0x04800
@@ -12,7 +15,7 @@
 #define SHOOT_MAX 8
 #define TIMER_SHOOT_MAX 0x0300
 #define SHOOT_SPEED 0x0340
-#define SHOOT_TID 24
+#define SHOOT_TID 32
 
 Player g_player;
 
@@ -34,10 +37,10 @@ void E_initPlayer(Player *p) {
       OBJ_16X16, 0, 0, 1, 
       SET_GFX_OBJ(FALSE, gfx_player));
 
-  t_shoot = TIMER_SHOOT_MAX;
-  bullet_count = 0;
-
   initPlayerBullet(p);
+
+  // Tmp
+  GRIT_CPY(&tile_mem[4][64], gfx_exploTiles);
 
   A_initAnim(&p->anims[PLAYER_STATE_IDLE], GET_ANIM(ANIM_SHIP_IDLE), 2, 0x080, TRUE, 0);
   A_initAnim(&p->anims[PLAYER_STATE_WALK], GET_ANIM(ANIM_SHIP_WALK), 2, 0x080, TRUE, 0);
@@ -69,7 +72,6 @@ void E_updatePlayer(Player *p) {
 
   T_flipObj(p->spr, p->dx < 0x00, FALSE);
 
-
   A_updateAnim(&p->anims[p->state], p->spr);
   updatePlayerBullet(p);
 
@@ -81,15 +83,16 @@ void E_updatePlayer(Player *p) {
 }
 
 void initPlayerBullet(Player *p) {
-  u32 ii;
+  int ii;
+  t_shoot = TIMER_SHOOT_MAX;
+  bullet_count = 0;
+
   for (ii = 0; ii < PLAYER_MAX_BULLET; ii++)
     p->b[ii].dead = TRUE;
 }
 
 void updatePlayerBullet(Player *p) {
-  u32 ii;
-  Bullet *b = p->b;
-
+  int ii;
   t_shoot -= 0x080;
 
   if (key_is_down(KEY_A) && t_shoot < 0) {
@@ -103,16 +106,13 @@ void updatePlayerBullet(Player *p) {
 
       initGfxBullet(&p->b[bullet_count], 
                     OBJ_16X16, SHOOT_TID, 0, 1, SET_GFX_OBJ(FALSE, gfx_bull_p01));
-
-      bullet_count = (bullet_count + 1) & (SHOOT_MAX - 1);
     }
 
+    bullet_count = (bullet_count + 1) & (SHOOT_MAX - 1);
     t_shoot = TIMER_SHOOT_MAX;
   }
 
-  for (ii = 0; ii < PLAYER_MAX_BULLET; ii++) {
-    updateBullet(b);
-    b++;
-  }
+  for (ii = 0; ii < PLAYER_MAX_BULLET; ii++)
+    updateBullet(&p->b[ii]);
 
 }

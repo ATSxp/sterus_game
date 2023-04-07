@@ -13,6 +13,7 @@ typedef struct {
 
 INLINE void initGfxBullet(Bullet *b, u16 size, u16 tid, u16 pal, u16 prio, TGfx *gfx);
 INLINE void destroyBullet(Bullet *b);
+INLINE void clearBullets(Bullet *buffer, u32 len);
 
 void initBullet(Bullet *b, int x, int y, u32 w, u32 h, FIXED dx, FIXED dy);
 void updateBullet(Bullet *b);
@@ -25,8 +26,15 @@ INLINE void destroyBullet(Bullet *b) {
   if (!b->dead) {
     b->dead = TRUE;
     T_removeObj(b->spr);
+    b->spr = NULL;
   }
 
+}
+
+INLINE void clearBullets(Bullet *buffer, u32 len) {
+  int ii;
+  for (ii = 0; ii < len; ii++)
+    destroyBullet(&buffer[ii]);
 }
 
 #endif // !__E_BULLET__
