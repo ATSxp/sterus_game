@@ -22,6 +22,8 @@
 #define INIT_OBJ(name) TSprite *name = NULL;
 #define SET_GFX_OBJ(bpp, gfx) &((TGfx){bpp, (TILE*)gfx##Tiles, (COLOR*)gfx##Pal, gfx##TilesLen, gfx##PalLen})
 
+#define REM_SPR(spr) T_removeObj((spr)); (spr) = NULL;
+
 typedef struct {
   BOOL bpp;
   TILE *tiles;

@@ -10,7 +10,6 @@
 #define PLAYER_INIT_X 0x07000
 #define PLAYER_INIT_Y 0x04800
 #define PLAYER_SPEED  0x0180
-#define PLAYER_MAX_HP 8
 
 #define SHOOT_MAX 8
 #define TIMER_SHOOT_MAX 0x0300
@@ -24,8 +23,11 @@ u8 bullet_count;
 
 void updatePlayerBullet(Player *p);
 void initPlayerBullet(Player *p);
+void destroyPlayer(Player *p);
 
 void E_initPlayer(Player *p) {
+  COLOR p_pal[16];
+
   p->hp = PLAYER_MAX_HP;
   p->dead = FALSE;
   p->pos.x = PLAYER_INIT_X;
@@ -39,15 +41,21 @@ void E_initPlayer(Player *p) {
 
   initPlayerBullet(p);
 
-  // Tmp
+  // Load explosion sprite-sheet on VRAM
   GRIT_CPY(&tile_mem[4][64], gfx_exploTiles);
 
-  A_initAnim(&p->anims[PLAYER_STATE_IDLE], GET_ANIM(ANIM_SHIP_IDLE), 2, 0x080, TRUE, 0);
-  A_initAnim(&p->anims[PLAYER_STATE_WALK], GET_ANIM(ANIM_SHIP_WALK), 2, 0x080, TRUE, 0);
+  toncset16(p_pal, CLR_WHITE, 16);
+  tonccpy(pal_obj_bank[14], p_pal, 32);
+
+  A_initAnim(&p->anims[PLAYER_STATE_IDLE], GET_ANIM(ANIM_SHIP_IDLE), 2, 0x080,  TRUE,  0);
+  A_initAnim(&p->anims[PLAYER_STATE_WALK], GET_ANIM(ANIM_SHIP_WALK), 2, 0x080,  TRUE,  0);
+  A_initAnim(&p->anims[PLAYER_STATE_DEAD], GET_ANIM(ANIM_DEATH),    14, 0x0480, FALSE, 0);
 }
 
 void E_updatePlayer(Player *p) {
   POINT32 pt = {p->pos.x >> 8, p->pos.y >> 8};
+
+  if (p->hp <= 0) destroyPlayer(p);
 
   if (key_is_down(KEY_UP) && pt.y > 0) {
     p->dy = -PLAYER_SPEED;
@@ -65,15 +73,25 @@ void E_updatePlayer(Player *p) {
     p->dx = 0;
   }
 
+  updatePlayerBullet(p);
+
+  if (!p->spr) return;
+
+  T_flipObj(p->spr, p->dx < 0x00, FALSE);
+  A_updateAnim(&p->anims[p->state], p->spr);
+
+  if (p->dead) { 
+    if (p->anims[PLAYER_STATE_DEAD].end) {
+      REM_SPR(p->spr);
+    }
+
+    return;
+  }
+
   if (p->dx != 0x00 || p->dy != 0x00)
     p->state = PLAYER_STATE_WALK;
   else
     p->state = PLAYER_STATE_IDLE;
-
-  T_flipObj(p->spr, p->dx < 0x00, FALSE);
-
-  A_updateAnim(&p->anims[p->state], p->spr);
-  updatePlayerBullet(p);
 
   p->pos.x += p->dx;
   p->pos.y += p->dy;
@@ -95,7 +113,7 @@ void updatePlayerBullet(Player *p) {
   int ii;
   t_shoot -= 0x080;
 
-  if (key_is_down(KEY_A) && t_shoot < 0) {
+  if (key_is_down(KEY_A) && t_shoot < 0 && !p->dead) {
     if (p->b[bullet_count].dead) {
       initBullet(
           &p->b[bullet_count], 
@@ -114,5 +132,13 @@ void updatePlayerBullet(Player *p) {
 
   for (ii = 0; ii < PLAYER_MAX_BULLET; ii++)
     updateBullet(&p->b[ii]);
+
+}
+
+void destroyPlayer(Player *p) {
+  if (!p->dead) {
+    p->dead = TRUE;
+    p->state = PLAYER_STATE_DEAD;
+  }
 
 }

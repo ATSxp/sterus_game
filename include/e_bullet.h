@@ -25,8 +25,7 @@ INLINE void initGfxBullet(Bullet *b, u16 size, u16 tid, u16 pal, u16 prio, TGfx 
 INLINE void destroyBullet(Bullet *b) {
   if (!b->dead) {
     b->dead = TRUE;
-    T_removeObj(b->spr);
-    b->spr = NULL;
+    REM_SPR(b->spr);
   }
 
 }

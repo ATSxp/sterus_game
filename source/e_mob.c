@@ -4,18 +4,21 @@
 // Sprites sheets
 #include "gfx_enemy_n.h"
 #include "gfx_explo.h"
-// Tmp
-#include "gfx_bull_p01.h"
+#include "gfx_bullet_enemy.h"
 
 #define MOB_TID_BASE 16
-#define MOB_SPEED_BASE 0x0200
+#define MOB_BULLET_TID_BASE 36
+#define MOB_SPEED_BASE 0x0300
 
 void E_initCommon(Mob *m);
 void E_updateCommon(Mob *m);
 
 void E_mobVsBullet(Mob *m, Bullet *b);
+void E_mobVsPlayer(Mob *m, Player *p);
 void E_updateMove(Mob *m);
 void E_updateBullet(Mob *m);
+
+void playerVsBullet(Player *p, Bullet *b);
 
 const struct MobTemplate g_mob_template[MOB_TOTAL] = {
   /*
@@ -29,7 +32,7 @@ const struct MobTemplate g_mob_template[MOB_TOTAL] = {
     MOB_TID_BASE, 0, OBJ_16X16, 
     16, 16, 
     SET_GFX_OBJ(FALSE, gfx_enemy_n), 
-    5, TRUE,
+    0, FALSE,
     E_initCommon, E_updateCommon
   },
 
@@ -38,13 +41,13 @@ const struct MobTemplate g_mob_template[MOB_TOTAL] = {
 Mob g_mobs[MOB_MAX];
 u8 g_mob_count;
 
-void E_initMob(enum MobIds id, int x, int y) {
-  const struct MobTemplate *t = &g_mob_template[id];
+void E_initMob(enum MobIds id, int x, int y, u16 move_type) {
   int ii;
+  const struct MobTemplate *t = &g_mob_template[id];
   Mob *m = NULL;
 
   for (ii = 0; ii < MOB_MAX; ii++) {
-    if (g_mobs[ii].dead) {
+    if (!g_mobs[ii].spr && g_mobs[ii].bullet_total == 0) {
       m = &g_mobs[ii];
       g_mob_count++;
       break;
@@ -58,7 +61,7 @@ void E_initMob(enum MobIds id, int x, int y) {
   m->id = id;
   m->w = t->w;
   m->h = t->h;
-  m->move_type = MOB_MOVE_NORMAL;
+  m->move_type = move_type;
   m->pos.x = x << 8;
   m->pos.y = y << 8;
   m->speed = 0x080;
@@ -81,15 +84,18 @@ void E_initMob(enum MobIds id, int x, int y) {
     m->dx = m->speed + 0x0100;
     m->dy = m->speed - 0x020;
   } else if (m->move_type == MOB_MOVE_GO) {
-    m->dx = m->speed + 0x0100;
+    if (x < 0)
+      m->dx = m->speed;
+    else
+      m->dx = -m->speed;
+
     m->dy = m->speed - 0x030;
   }
 
-  // Tmp
+  // Load explosion sprite-sheet on VRAM
   GRIT_CPY(&tile_mem[4][64], gfx_exploTiles);
 
   A_initAnim(&m->anims[MOB_STATE_DEAD], GET_ANIM(ANIM_DEATH), 14, 0x0480, FALSE, 0);
-
 }
 
 void E_updateMob(Mob *m) {
@@ -98,6 +104,8 @@ void E_updateMob(Mob *m) {
 
   E_updateBullet(m);
 
+  if (!m->spr) return;
+
   if ((pt.x < - (int)m->w || pt.x > SCREEN_WIDTH || 
       pt.y > SCREEN_HEIGHT))
     m->hp = 0;
@@ -105,13 +113,11 @@ void E_updateMob(Mob *m) {
   if (m->hp <= 0)
     E_removeMob(m);
 
-  if (m->spr)
-    A_updateAnim(&m->anims[m->state], m->spr);
+  A_updateAnim(&m->anims[m->state], m->spr);
 
   if (m->dead) {
-    if (m->anims[MOB_STATE_DEAD].end && m->spr) {
-      T_removeObj(m->spr);
-      m->spr = NULL;
+    if (m->anims[MOB_STATE_DEAD].end) {
+      REM_SPR(m->spr);
     }
     return;
   }
@@ -121,8 +127,13 @@ void E_updateMob(Mob *m) {
   else
     m->state = MOB_STATE_IDLE;
 
+  E_mobVsPlayer(m, &g_player);
+
   for (ii = 0; ii < PLAYER_MAX_BULLET; ii++)
     E_mobVsBullet(m, &g_player.b[ii]);
+
+  for (ii = 0; ii < m->max_bullets; ii++)
+    playerVsBullet(&g_player, &m->bull[ii]);
 
   if (g_mob_template[m->id].run) 
     g_mob_template[m->id].run(m);
@@ -153,36 +164,69 @@ void E_updateBullet(Mob *m) {
       m->bull[ii].dead = TRUE;
   }
 
-  if (!m->dead) {
+  if (!m->dead)
     m->bullet_timer -= 0x020;
+  else
+    m->bullet_timer = m->bullet_max_timer;
 
-    if (m->bullet_timer <= 0x00) {
-      if (m->bull[m->bullet_count].dead) {
-        Bullet *_b = &m->bull[m->bullet_count];
+  if (m->bullet_timer <= 0x00) {
+    if (m->bull[m->bullet_count].dead) {
+      Bullet *_b = &m->bull[m->bullet_count];
 
-        initBullet(_b, pt.x, pt.y, 8, 8, 0x00, MOB_SPEED_BASE);
+      initBullet(
+          _b, 
+          pt.x + (m->w >> 1) - 3, pt.y, 
+          8, 8, 0x00, MOB_SPEED_BASE
+        );
 
-        // Tmp
-        initGfxBullet(_b, OBJ_16X16, 32, 0, 1, SET_GFX_OBJ(FALSE, gfx_bull_p01));
-        _b = NULL;
-      }
+      initGfxBullet(
+          _b, OBJ_8X8, 
+          MOB_BULLET_TID_BASE, 
+          0, 1, 
+          SET_GFX_OBJ(FALSE, gfx_bullet_enemy)
+        );
 
-      m->bullet_count = (m->bullet_count + 1) % m->max_bullets;
-      m->bullet_timer = m->bullet_max_timer;
+        m->bullet_total++;
+      _b = NULL;
     }
 
+    m->bullet_count = (m->bullet_count + 1) % m->max_bullets;
+    m->bullet_timer = m->bullet_max_timer;
   }
 
-  for (ii = 0; ii < m->max_bullets; ii++)
+  for (ii = 0; ii < m->max_bullets; ii++) {
     updateBullet(&m->bull[ii]);
+
+    if (m->bull[ii].dead && m->bull[ii].spr) m->bullet_total--;
+  }
 
 }
 
 void E_mobVsBullet(Mob *m, Bullet *b) {
   if (m->dead || b->dead) return;
 
-  if (T_objVsObj(m->spr, b->spr) && m->hp > 0) {
+  if (T_objVsObj(m->spr, b->spr)) {
     m->hp--;
+    destroyBullet(b);
+  }
+
+}
+
+void E_mobVsPlayer(Mob *m, Player *p) {
+  if (m->dead || p->dead) return;
+
+  if (T_objVsObj(m->spr, p->spr)) {
+    p->hp--;
+    m->hp--;
+  }
+
+}
+
+void playerVsBullet(Player *p, Bullet *b) {
+  if (p->dead || b->dead) return;
+
+  if (T_objVsObj(p->spr, b->spr)) {
+    p->hp--;
     destroyBullet(b);
   }
 
