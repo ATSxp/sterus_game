@@ -21,12 +21,22 @@ typedef struct {
   Bullet b[PLAYER_MAX_BULLET];
   Anim anims[3];
   u8 state;
-  BOOL dead;
+  BOOL dead, damaged;
 } Player;
 
 extern Player g_player;
 
+INLINE void E_damagePlayer(Player *p, int dmg);
+
 void E_initPlayer(Player *p);
 void E_updatePlayer(Player *p);
+
+INLINE void E_damagePlayer(Player *p, int dmg) {
+  if (!p->damaged) {
+    p->damaged = TRUE;
+    p->hp += dmg;
+  }
+
+}
 
 #endif // !__E_PLAYER__

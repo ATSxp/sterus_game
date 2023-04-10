@@ -27,6 +27,9 @@ void updateHud(Player p) {
     return;
   }
 
+  for (ii = 0; ii < p.hp; ii++)
+    se_plot(&se_mem[31][0], ii + 1, 0, SE_ID(30) | SE_PALBANK(2));
+
   if (p.hp != PLAYER_MAX_HP) {
     dist = clamp(PLAYER_MAX_HP - p.hp, 0, PLAYER_MAX_HP + 1);
 

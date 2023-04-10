@@ -55,6 +55,8 @@ void E_initPlayer(Player *p) {
 void E_updatePlayer(Player *p) {
   POINT32 pt = {p->pos.x >> 8, p->pos.y >> 8};
 
+  p->hp = clamp(p->hp, 0, PLAYER_MAX_HP + 1);
+
   if (p->hp <= 0) destroyPlayer(p);
 
   if (key_is_down(KEY_UP) && pt.y > 0) {
@@ -77,7 +79,6 @@ void E_updatePlayer(Player *p) {
 
   if (!p->spr) return;
 
-  T_flipObj(p->spr, p->dx < 0x00, FALSE);
   A_updateAnim(&p->anims[p->state], p->spr);
 
   if (p->dead) { 
@@ -87,6 +88,10 @@ void E_updatePlayer(Player *p) {
 
     return;
   }
+
+  T_flipObj(p->spr, p->dx < 0x00, FALSE);
+
+  p->damaged = FALSE;
 
   if (p->dx != 0x00 || p->dy != 0x00)
     p->state = PLAYER_STATE_WALK;

@@ -216,7 +216,7 @@ void E_mobVsPlayer(Mob *m, Player *p) {
   if (m->dead || p->dead) return;
 
   if (T_objVsObj(m->spr, p->spr)) {
-    p->hp--;
+    E_damagePlayer(p, -1);
     m->hp--;
   }
 
@@ -226,7 +226,7 @@ void playerVsBullet(Player *p, Bullet *b) {
   if (p->dead || b->dead) return;
 
   if (T_objVsObj(p->spr, b->spr)) {
-    p->hp--;
+    E_damagePlayer(p, -1);
     destroyBullet(b);
   }
 

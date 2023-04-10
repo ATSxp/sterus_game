@@ -1,8 +1,11 @@
 #include "e_item.h"
+#include "e_player.h"
 
 #include "gfx_item_obj.h"
 
 Item g_items[ITEM_MAX] EWRAM_BSS;
+
+INLINE void I_ItemVsPlayer(Item *i, Player *p);
 
 void I_initItem(u8 id, int x, int y) {
   int ii;
@@ -25,7 +28,6 @@ void I_initItem(u8 id, int x, int y) {
   i->dy = 0x020;
 
   i = NULL;
-
 }
 
 void I_updateItems(Item *i) {
@@ -33,10 +35,21 @@ void I_updateItems(Item *i) {
 
   POINT32 pt = {i->pos.x >> 8, i->pos.y >> 8};
 
+  I_ItemVsPlayer(i, &g_player);
+
   i->pos.x += i->dx;
   i->pos.y += i->dy;
 
   i->spr->x = pt.x;
   i->spr->y = pt.y;
+}
+
+INLINE void I_ItemVsPlayer(Item *i, Player *p) {
+  if (T_objVsObj(i->spr, p->spr)) {
+    E_damagePlayer(p, 4);
+
+    i->dead = TRUE;
+    REM_SPR(i->spr);
+  }
 
 }
