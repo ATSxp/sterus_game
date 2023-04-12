@@ -59,15 +59,15 @@ void T_initObjs();
 BOOL T_objVsObj(TSprite *s, TSprite *s2);
 
 INLINE void T_setTileObj(TSprite *spr, u16 tid) {
-  BFN_SET2(spr_buffer[spr->id].obj.attr2, tid, ATTR2_ID);
+  BFN_SET(spr_buffer[spr->id].obj.attr2, tid, ATTR2_ID);
 }
 
 INLINE void T_setPalBankObj(TSprite *spr, u16 pb) {
-  BFN_SET2(spr_buffer[spr->id].obj.attr2, pb, ATTR2_PALBANK);
+  BFN_SET(spr_buffer[spr->id].obj.attr2, pb, ATTR2_PALBANK);
 }
 
 INLINE void T_setPrioObj(TSprite *spr, u16 prio) {
-  BFN_SET2(spr_buffer[spr->id].obj.attr2, prio, ATTR2_PRIO);
+  BFN_SET(spr_buffer[spr->id].obj.attr2, prio, ATTR2_PRIO);
 }
 
 INLINE void T_setPosObj(TSprite *spr, int x, int y) {

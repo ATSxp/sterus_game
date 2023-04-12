@@ -1,5 +1,3 @@
-#include <string.h>
-
 #include "e_player.h"
 #include "e_bullet.h"
 
@@ -24,6 +22,7 @@ u8 bullet_count;
 void updatePlayerBullet(Player *p);
 void initPlayerBullet(Player *p);
 void destroyPlayer(Player *p);
+void effectPlayer(Player *p);
 
 void E_initPlayer(Player *p) {
   COLOR p_pal[16];
@@ -59,21 +58,19 @@ void E_updatePlayer(Player *p) {
 
   if (p->hp <= 0) destroyPlayer(p);
 
-  if (key_is_down(KEY_UP) && pt.y > 0) {
+  if (key_is_down(KEY_UP) && pt.y > 0)
     p->dy = -PLAYER_SPEED;
-  } else if (key_is_down(KEY_DOWN) && pt.y < (SCREEN_HEIGHT - p->h)) {
+  else if (key_is_down(KEY_DOWN) && pt.y < (SCREEN_HEIGHT - p->h))
     p->dy = PLAYER_SPEED;
-  } else {
+  else
     p->dy = 0;
-  }
 
-  if (key_is_down(KEY_LEFT) && pt.x > 1) {
+  if (key_is_down(KEY_LEFT) && pt.x > 1)
     p->dx = -PLAYER_SPEED;
-  } else if (key_is_down(KEY_RIGHT) && pt.x < (SCREEN_WIDTH - (p->w + 1))) {
+  else if (key_is_down(KEY_RIGHT) && pt.x < (SCREEN_WIDTH - (p->w + 1)))
     p->dx = PLAYER_SPEED;
-  } else {
+  else
     p->dx = 0;
-  }
 
   updatePlayerBullet(p);
 
@@ -86,12 +83,15 @@ void E_updatePlayer(Player *p) {
       REM_SPR(p->spr);
     }
 
+    T_setPalBankObj(p->spr, 0);
+
     return;
   }
 
   T_flipObj(p->spr, p->dx < 0x00, FALSE);
 
   p->damaged = FALSE;
+  effectPlayer(p);
 
   if (p->dx != 0x00 || p->dy != 0x00)
     p->state = PLAYER_STATE_WALK;
@@ -110,7 +110,10 @@ void initPlayerBullet(Player *p) {
   t_shoot = TIMER_SHOOT_MAX;
   bullet_count = 0;
 
-  for (ii = 0; ii < PLAYER_MAX_BULLET; ii++)
+  GRIT_CPY(pal_obj_mem, gfx_bull_p01Pal);
+  GRIT_CPY(&tile_mem[4][SHOOT_TID], gfx_bull_p01Tiles);
+
+  for (ii = 0; ii < SHOOT_MAX; ii++)
     p->b[ii].dead = TRUE;
 }
 
@@ -127,8 +130,7 @@ void updatePlayerBullet(Player *p) {
           0x00, -SHOOT_SPEED
         );
 
-      initGfxBullet(&p->b[bullet_count], 
-                    OBJ_16X16, SHOOT_TID, 0, 1, SET_GFX_OBJ(FALSE, gfx_bull_p01));
+      initGfxBullet(&p->b[bullet_count], OBJ_16X16, SHOOT_TID, 0, 1, NULL);
     }
 
     bullet_count = (bullet_count + 1) & (SHOOT_MAX - 1);
@@ -144,6 +146,16 @@ void destroyPlayer(Player *p) {
   if (!p->dead) {
     p->dead = TRUE;
     p->state = PLAYER_STATE_DEAD;
+  }
+
+}
+
+void effectPlayer(Player *p) {
+  if (p->imortal_t != 0x00) {
+    p->imortal_t -= 0x080;
+    T_setPalBankObj(p->spr, 14);
+  } else {
+    T_setPalBankObj(p->spr, 0);
   }
 
 }

@@ -5,6 +5,12 @@
 
 #define ITEM_MAX 10
 
+enum ItemIds {
+  ITEM_ID_GUN,
+  ITEM_ID_HEALTH,
+  ITEM_TOTAL
+};
+
 typedef struct {
   u8 id;
   POINT32 pos;
@@ -14,7 +20,15 @@ typedef struct {
   BOOL dead : TRUE;
 } Item;
 
+typedef struct {
+  u16 tid, pal, size;
+  u32 w, h;
+  TGfx *gfx;
+  fnptr get, use;
+} ItemTemplate;
+
 extern Item g_items[ITEM_MAX] EWRAM_BSS;
+extern const ItemTemplate g_items_template[ITEM_TOTAL];
 
 INLINE void I_updateAllItems();
 

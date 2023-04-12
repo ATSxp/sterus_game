@@ -55,9 +55,9 @@ struct MobTemplate {
 
 extern const struct MobTemplate g_mob_template[MOB_TOTAL];
 extern Mob g_mobs[MOB_MAX];
-extern u8 g_mob_count;
+// extern u8 g_mob_count;
 
-INLINE void E_initAllMobs();
+// INLINE void E_initAllMobs();
 INLINE void E_updateAllMobs();
 INLINE void E_removeMob(Mob *m);
 INLINE void E_clearAllMobs();
@@ -65,9 +65,6 @@ INLINE void E_clearAllMobs();
 void E_initMob(enum MobIds id, int x, int y, u16 move_type);
 void E_updateMob(Mob *m);
 void E_updateAllMobs();
-
-INLINE void E_initAllMobs() 
-{ g_mob_count = 0; }
 
 INLINE void E_updateAllMobs() {
   int ii;
@@ -88,8 +85,6 @@ INLINE void E_removeMob(Mob *m) {
   if (!m->dead) {
     m->dead = TRUE;
     m->state = MOB_STATE_DEAD;
-    g_mob_count--;
-
   }
 
 }

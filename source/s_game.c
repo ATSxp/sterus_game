@@ -19,10 +19,9 @@ void initGame() {
   L_initLevel(&g_levels[LEVEL_01]);
 
   E_initPlayer(&g_player);
-  E_initAllMobs();
   initHud(g_player);
 
-  I_initItem(0, 16, 0);
+  I_initItem(ITEM_ID_HEALTH, 16, 0);
 }
 
 void updateGame() {

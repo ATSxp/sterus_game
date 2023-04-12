@@ -18,9 +18,12 @@ typedef struct {
   u32 w, h;
   u32 hp;
   TSprite *spr;
+
   Bullet b[PLAYER_MAX_BULLET];
   Anim anims[3];
-  u8 state;
+
+  u8 state, i_health;
+  FIXED imortal_t;
   BOOL dead, damaged;
 } Player;
 
@@ -35,6 +38,7 @@ INLINE void E_damagePlayer(Player *p, int dmg) {
   if (!p->damaged) {
     p->damaged = TRUE;
     p->hp += dmg;
+    p->imortal_t = 0x0400;
   }
 
 }
