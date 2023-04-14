@@ -16,7 +16,7 @@
 
 Player g_player;
 
-FIXED t_shoot;
+FIXED t_shoot; // Timer to shoot
 u8 bullet_count;
 
 void updatePlayerBullet(Player *p);
@@ -41,7 +41,7 @@ void E_initPlayer(Player *p) {
   initPlayerBullet(p);
 
   // Load explosion sprite-sheet on VRAM
-  GRIT_CPY(&tile_mem[4][64], gfx_exploTiles);
+  tonccpy(&tile_mem[4][64], gfx_exploTiles, gfx_exploTilesLen);
 
   toncset16(p_pal, CLR_WHITE, 16);
   tonccpy(pal_obj_bank[14], p_pal, 32);
@@ -52,6 +52,7 @@ void E_initPlayer(Player *p) {
 }
 
 void E_updatePlayer(Player *p) {
+  int ii;
   POINT32 pt = {p->pos.x >> 8, p->pos.y >> 8};
 
   p->hp = clamp(p->hp, 0, PLAYER_MAX_HP + 1);
@@ -97,6 +98,10 @@ void E_updatePlayer(Player *p) {
     p->state = PLAYER_STATE_WALK;
   else
     p->state = PLAYER_STATE_IDLE;
+
+  for (ii = 0; ii < 3; ii++)
+    if (ii != p->state)
+      A_resetAnim(&p->anims[ii]);
 
   p->pos.x += p->dx;
   p->pos.y += p->dy;

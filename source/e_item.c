@@ -6,33 +6,33 @@
 
 #define ITEM_TID_BASE 128
 
-Item g_items[ITEM_MAX] EWRAM_BSS;
+Item g_items[ITEM_MAX] = {0};
 
-INLINE void I_getGun();
-INLINE void I_getHealth();
+INLINE void E_getGun();
+INLINE void E_getHealth();
 
-INLINE void I_useHealth();
+INLINE void E_useHealth();
 
-INLINE void I_ItemVsPlayer(Item *i, Player *p);
+INLINE void E_ItemVsPlayer(Item *i, Player *p);
 
 const ItemTemplate g_items_template[ITEM_TOTAL] = {
   {
     ITEM_TID_BASE, 0, OBJ_16X16, 
     16, 16, 
     SET_GFX_OBJ(FALSE, gfx_item_obj), 
-    I_getGun
+    E_getGun
   }, 
   {
     ITEM_TID_BASE + 4, 0, OBJ_16X16, 
     16, 16, 
     NULL, 
-    I_getHealth, 
-    I_useHealth
+    E_getHealth, 
+    E_useHealth
   }, 
 
 };
 
-void I_initItem(u8 id, int x, int y) {
+void E_initItem(u8 id, int x, int y) {
   int ii;
   const ItemTemplate *t = &g_items_template[id];
   Item *i = NULL;
@@ -60,7 +60,7 @@ void I_initItem(u8 id, int x, int y) {
   i = NULL;
 }
 
-void I_updateItems(Item *i) {
+void E_updateItems(Item *i) {
   if (!i->spr) return;
 
   POINT32 pt = {i->pos.x >> 8, i->pos.y >> 8};
@@ -71,7 +71,7 @@ void I_updateItems(Item *i) {
     REM_SPR(i->spr);
   }
 
-  I_ItemVsPlayer(i, &g_player);
+  E_ItemVsPlayer(i, &g_player);
 
   i->pos.x += i->dx;
   i->pos.y += i->dy;
@@ -80,7 +80,7 @@ void I_updateItems(Item *i) {
   i->spr->y = pt.y;
 }
 
-INLINE void I_ItemVsPlayer(Item *i, Player *p) {
+INLINE void E_ItemVsPlayer(Item *i, Player *p) {
   if (T_objVsObj(i->spr, p->spr)) {
     if (g_items_template[i->id].get)
       g_items_template[i->id].get();
@@ -91,12 +91,12 @@ INLINE void I_ItemVsPlayer(Item *i, Player *p) {
 
 }
 
-INLINE void I_getGun() {}
+INLINE void E_getGun() {}
 
-INLINE void I_getHealth() 
+INLINE void E_getHealth() 
 { g_player.i_health++; }
 
-INLINE void I_useHealth() {
+INLINE void E_useHealth() {
   g_player.i_health--;
   E_damagePlayer(&g_player, 4);
 }

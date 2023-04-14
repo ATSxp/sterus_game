@@ -161,8 +161,8 @@ void _setGfxObj(TSprite *spr, TGfx *gfx, u16 tid) {
     if (!gfx->bpp) tile_dst = &tile_mem[4][tid];
     else tile_dst = &tile_mem[4][tid * 2];
 
-    memcpy32(tile_dst, gfx->tiles, gfx->tiles_len / 4);
-    memcpy32(pal_dst, gfx->pal, gfx->pal_len / 4);
+    tonccpy(tile_dst, gfx->tiles, gfx->tiles_len);
+    tonccpy(pal_dst, gfx->pal, gfx->pal_len);
   }
 
 }

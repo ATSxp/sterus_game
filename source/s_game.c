@@ -21,20 +21,19 @@ void initGame() {
   E_initPlayer(&g_player);
   initHud(g_player);
 
-  I_initItem(ITEM_ID_HEALTH, 16, 0);
+  E_initItem(ITEM_ID_HEALTH, 16, 0);
 }
 
 void updateGame() {
   // Tmp
-  if (key_hit(KEY_B)) {
-    E_initMob(MOB_ID_COMMON, -16, -16, MOB_MOVE_GO);
-  }
+  if (key_hit(KEY_B))
+    E_initMob(MOB_ID_COMMON, 240, -16, MOB_MOVE_ZIGZAG);
 
-  L_updateLevel();
+  L_updateLevel(&g_levels[LEVEL_01]);
   
   E_updatePlayer(&g_player);
   E_updateAllMobs();
-  I_updateAllItems();
+  E_updateAllItems();
 
   updateHud(g_player);
   T_updateObjs(FALSE);
@@ -43,6 +42,8 @@ void updateGame() {
 void endGame() {
   clearBullets(g_player.b, 8);
   E_clearAllMobs();
+
+  T_disableObjs();
 }
 
 Scene g_scene_game = {initGame, updateGame, endGame};

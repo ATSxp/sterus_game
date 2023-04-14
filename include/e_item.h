@@ -30,15 +30,15 @@ typedef struct {
 extern Item g_items[ITEM_MAX] EWRAM_BSS;
 extern const ItemTemplate g_items_template[ITEM_TOTAL];
 
-INLINE void I_updateAllItems();
+INLINE void E_updateAllItems();
 
-void I_initItem(u8 id, int x, int y);
-void I_updateItems(Item *i);
+void E_initItem(u8 id, int x, int y);
+void E_updateItems(Item *i);
 
-INLINE void I_updateAllItems() {
+INLINE void E_updateAllItems() {
   int ii;
   for (ii = 0; ii < ITEM_MAX; ii++)
-    I_updateItems(&g_items[ii]);
+    E_updateItems(&g_items[ii]);
 }
 
 #endif // !__E_ITEM_H__

@@ -39,20 +39,19 @@ const struct MobTemplate g_mob_template[MOB_TOTAL] = {
 };
 
 Mob g_mobs[MOB_MAX];
-u8 g_mob_count;
+u8 g_mob_count, spawn_count = 0;
 
 void E_initMob(enum MobIds id, int x, int y, u16 move_type) {
-  int ii;
   const struct MobTemplate *t = &g_mob_template[id];
   Mob *m = NULL;
 
-  for (ii = 0; ii < MOB_MAX; ii++) {
-    if (!g_mobs[ii].spr && g_mobs[ii].bullet_total == 0) {
-      m = &g_mobs[ii];
+  while (!m) {
+    if (!g_mobs[spawn_count].spr && g_mobs[spawn_count].bullet_total == 0) {
+      m = &g_mobs[spawn_count];
       g_mob_count++;
-      break;
     }
 
+    spawn_count = (spawn_count + 1) % MOB_MAX;
   }
 
   m->dead = FALSE;
@@ -81,10 +80,14 @@ void E_initMob(enum MobIds id, int x, int y, u16 move_type) {
   if (m->move_type == MOB_MOVE_NORMAL) {
     m->dy = m->speed;
   } else if (m->move_type == MOB_MOVE_ZIGZAG) {
-    m->dx = m->speed + 0x0100;
+    if (x < SCREEN_WIDTH >> 1)
+      m->dx = m->speed + 0x0100;
+    else
+      m->dx = -(m->speed + 0x0100);
+
     m->dy = m->speed - 0x020;
   } else if (m->move_type == MOB_MOVE_GO) {
-    if (x < 0)
+    if (x < SCREEN_WIDTH >> 1)
       m->dx = m->speed;
     else
       m->dx = -m->speed;
@@ -93,9 +96,11 @@ void E_initMob(enum MobIds id, int x, int y, u16 move_type) {
   }
 
   // Load explosion sprite-sheet on VRAM
-  GRIT_CPY(&tile_mem[4][64], gfx_exploTiles);
+  tonccpy(&tile_mem[4][64], gfx_exploTiles, gfx_exploTilesLen);
 
   A_initAnim(&m->anims[MOB_STATE_DEAD], GET_ANIM(ANIM_DEATH), 14, 0x0480, FALSE, 0);
+
+  m = NULL;
 }
 
 void E_updateMob(Mob *m) {
