@@ -20,15 +20,9 @@ void initGame() {
 
   E_initPlayer(&g_player);
   initHud(g_player);
-
-  E_initItem(ITEM_ID_HEALTH, 16, 0);
 }
 
 void updateGame() {
-  // Tmp
-  if (key_hit(KEY_B))
-    E_initMob(MOB_ID_COMMON, 240, -16, MOB_MOVE_ZIGZAG);
-
   L_updateLevel(&g_levels[LEVEL_01]);
   
   E_updatePlayer(&g_player);

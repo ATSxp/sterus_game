@@ -15,8 +15,8 @@ enum LevelsIds {
 
 typedef struct {
   u32 amount;
-  u8 id;
-  u16 pos;
+  s8 id;
+  POINT32 pos;
   u16 move_type;
 } LevelSpawn;
 
