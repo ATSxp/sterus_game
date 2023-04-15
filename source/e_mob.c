@@ -1,5 +1,6 @@
 #include "e_mob.h"
 #include "e_player.h"
+#include "e_item.h"
 
 // Sprites sheets
 #include "gfx_enemy_n.h"
@@ -99,12 +100,11 @@ void E_initMob(enum MobIds id, int x, int y, u16 move_type) {
   tonccpy(&tile_mem[4][64], gfx_exploTiles, gfx_exploTilesLen);
 
   A_initAnim(&m->anims[MOB_STATE_DEAD], GET_ANIM(ANIM_DEATH), 14, 0x0480, FALSE, 0);
-
-  m = NULL;
 }
 
 void E_updateMob(Mob *m) {
   int ii;
+  u32 rnd = qran_range(ITEM_ID_GUN, ITEM_TOTAL);
   POINT32 pt = {m->pos.x >> 8, m->pos.y >> 8};
 
   E_updateBullet(m);
@@ -123,6 +123,9 @@ void E_updateMob(Mob *m) {
   if (m->dead) {
     if (m->anims[MOB_STATE_DEAD].end) {
       REM_SPR(m->spr);
+
+      if (rnd != ITEM_TOTAL)
+        E_initItem(rnd, pt.x, pt.y);
     }
     return;
   }

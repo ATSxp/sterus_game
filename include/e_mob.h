@@ -55,9 +55,7 @@ struct MobTemplate {
 
 extern const struct MobTemplate g_mob_template[MOB_TOTAL];
 extern Mob g_mobs[MOB_MAX];
-// extern u8 g_mob_count;
 
-// INLINE void E_initAllMobs();
 INLINE void E_updateAllMobs();
 INLINE void E_removeMob(Mob *m);
 INLINE void E_clearAllMobs();

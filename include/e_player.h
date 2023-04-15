@@ -37,8 +37,11 @@ void E_updatePlayer(Player *p);
 INLINE void E_damagePlayer(Player *p, int dmg) {
   if (!p->damaged) {
     p->damaged = TRUE;
+
     p->hp += dmg;
-    p->imortal_t = 0x0400;
+    
+    if (dmg < 0)
+      p->imortal_t = 0x0400;
   }
 
 }

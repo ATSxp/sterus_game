@@ -1,5 +1,7 @@
 #include "e_player.h"
 #include "e_bullet.h"
+#include "e_item.h"
+#include "hud.h"
 
 #include "gfx_player.h"
 #include "gfx_bull_p01.h"
@@ -55,8 +57,6 @@ void E_updatePlayer(Player *p) {
   int ii;
   POINT32 pt = {p->pos.x >> 8, p->pos.y >> 8};
 
-  p->hp = clamp(p->hp, 0, PLAYER_MAX_HP + 1);
-
   if (p->hp <= 0) destroyPlayer(p);
 
   if (key_is_down(KEY_UP) && pt.y > 0)
@@ -89,6 +89,11 @@ void E_updatePlayer(Player *p) {
     return;
   }
 
+  if (key_hit(KEY_B)) {
+    if (g_inv_cursor == 0)
+      E_useHealth(p);
+  }
+
   T_flipObj(p->spr, p->dx < 0x00, FALSE);
 
   p->damaged = FALSE;
@@ -102,6 +107,8 @@ void E_updatePlayer(Player *p) {
   for (ii = 0; ii < 3; ii++)
     if (ii != p->state)
       A_resetAnim(&p->anims[ii]);
+
+  p->hp = clamp(p->hp, 0, PLAYER_MAX_HP + 1);
 
   p->pos.x += p->dx;
   p->pos.y += p->dy;

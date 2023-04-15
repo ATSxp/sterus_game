@@ -1,17 +1,13 @@
 #include "e_item.h"
-#include "e_player.h"
 
 #include "gfx_item_obj.h"
 #include "gfx_items.h"
 
-#define ITEM_TID_BASE 128
-
 Item g_items[ITEM_MAX] = {0};
+u8 spawns = 0;
 
 INLINE void E_getGun();
 INLINE void E_getHealth();
-
-INLINE void E_useHealth();
 
 INLINE void E_ItemVsPlayer(Item *i, Player *p);
 
@@ -26,23 +22,21 @@ const ItemTemplate g_items_template[ITEM_TOTAL] = {
     ITEM_TID_BASE + 4, 0, OBJ_16X16, 
     16, 16, 
     NULL, 
-    E_getHealth, 
-    E_useHealth
+    E_getHealth
   }, 
 
 };
 
 void E_initItem(u8 id, int x, int y) {
-  int ii;
   const ItemTemplate *t = &g_items_template[id];
   Item *i = NULL;
 
-  for (ii = 0; ii < ITEM_MAX; ii++) {
-    if (!g_items[ii].spr) {
-      i = &g_items[ii];
-      break;
+  while (!i) {
+    if (!g_items[spawns].spr) {
+      i = &g_items[spawns];
     }
 
+    spawns = (spawns + 1) % ITEM_MAX;
   }
 
   GRIT_CPY(pal_obj_mem, gfx_itemsPal);
@@ -55,9 +49,7 @@ void E_initItem(u8 id, int x, int y) {
   i->w = t->w;
   i->h = t->h;
   i->spr = T_addObj(x, y, t->size, t->tid, t->pal, 1, t->gfx);
-  i->dy = 0x020;
-
-  i = NULL;
+  i->dy = 0x070;
 }
 
 void E_updateItems(Item *i) {
@@ -95,8 +87,3 @@ INLINE void E_getGun() {}
 
 INLINE void E_getHealth() 
 { g_player.i_health++; }
-
-INLINE void E_useHealth() {
-  g_player.i_health--;
-  E_damagePlayer(&g_player, 4);
-}
