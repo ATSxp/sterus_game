@@ -1,6 +1,5 @@
 #include "e_item.h"
 
-#include "gfx_item_obj.h"
 #include "gfx_items.h"
 
 Item g_items[ITEM_MAX] = {0};
@@ -15,7 +14,7 @@ const ItemTemplate g_items_template[ITEM_TOTAL] = {
   {
     ITEM_TID_BASE, 0, OBJ_16X16, 
     16, 16, 
-    SET_GFX_OBJ(FALSE, gfx_item_obj), 
+    SET_GFX_OBJ(FALSE, gfx_items), 
     E_getGun
   }, 
   {
@@ -38,9 +37,6 @@ void E_initItem(u8 id, int x, int y) {
 
     spawns = (spawns + 1) % ITEM_MAX;
   }
-
-  GRIT_CPY(pal_obj_mem, gfx_itemsPal);
-  GRIT_CPY(&tile_mem[4][ITEM_TID_BASE + 4], gfx_itemsTiles);
 
   i->id = id;
   i->dead = FALSE;

@@ -5,7 +5,7 @@
 #include "e_player.h"
 
 #define ITEM_MAX 20
-#define ITEM_TID_BASE 128
+#define ITEM_TID_BASE 192
 
 enum ItemIds {
   ITEM_ID_GUN,

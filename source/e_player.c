@@ -14,7 +14,7 @@
 #define SHOOT_MAX 8
 #define TIMER_SHOOT_MAX 0x0300
 #define SHOOT_SPEED 0x0340
-#define SHOOT_TID 32
+#define SHOOT_TID 226
 
 Player g_player;
 
@@ -43,14 +43,14 @@ void E_initPlayer(Player *p) {
   initPlayerBullet(p);
 
   // Load explosion sprite-sheet on VRAM
-  tonccpy(&tile_mem[4][64], gfx_exploTiles, gfx_exploTilesLen);
+  tonccpy(&tile_mem[4][EXPLOSION_TID_BASE], gfx_exploTiles, gfx_exploTilesLen);
 
   toncset16(p_pal, CLR_WHITE, 16);
   tonccpy(pal_obj_bank[14], p_pal, 32);
 
   A_initAnim(&p->anims[PLAYER_STATE_IDLE], GET_ANIM(ANIM_SHIP_IDLE), 2, 0x080,  TRUE,  0);
   A_initAnim(&p->anims[PLAYER_STATE_WALK], GET_ANIM(ANIM_SHIP_WALK), 2, 0x080,  TRUE,  0);
-  A_initAnim(&p->anims[PLAYER_STATE_DEAD], GET_ANIM(ANIM_DEATH),    14, 0x0480, FALSE, 0);
+  A_initAnim(&p->anims[PLAYER_STATE_DEAD], GET_ANIM(ANIM_DEATH),    14, 0x0480, FALSE, EXPLOSION_TID_BASE);
 }
 
 void E_updatePlayer(Player *p) {

@@ -3,12 +3,12 @@
 #include "e_item.h"
 
 // Sprites sheets
-#include "gfx_enemy_n.h"
+#include "gfx_enemys.h"
 #include "gfx_explo.h"
 #include "gfx_bullet_enemy.h"
 
 #define MOB_TID_BASE 16
-#define MOB_BULLET_TID_BASE 36
+#define MOB_BULLET_TID_BASE 224
 #define MOB_SPEED_BASE 0x0300
 
 void E_initCommon(Mob *m);
@@ -32,7 +32,7 @@ const struct MobTemplate g_mob_template[MOB_TOTAL] = {
   {
     MOB_TID_BASE, 0, OBJ_16X16, 
     16, 16, 
-    SET_GFX_OBJ(FALSE, gfx_enemy_n), 
+    SET_GFX_OBJ(FALSE, gfx_enemys), 
     0, FALSE,
     E_initCommon, E_updateCommon
   },
@@ -97,9 +97,9 @@ void E_initMob(enum MobIds id, int x, int y, u16 move_type) {
   }
 
   // Load explosion sprite-sheet on VRAM
-  tonccpy(&tile_mem[4][64], gfx_exploTiles, gfx_exploTilesLen);
+  tonccpy(&tile_mem[4][EXPLOSION_TID_BASE], gfx_exploTiles, gfx_exploTilesLen);
 
-  A_initAnim(&m->anims[MOB_STATE_DEAD], GET_ANIM(ANIM_DEATH), 14, 0x0480, FALSE, 0);
+  A_initAnim(&m->anims[MOB_STATE_DEAD], GET_ANIM(ANIM_DEATH), 14, 0x0480, FALSE, EXPLOSION_TID_BASE);
 }
 
 void E_updateMob(Mob *m) {
