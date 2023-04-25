@@ -39,6 +39,7 @@ typedef struct {
   TGfx gfx;
 
   BOOL active;
+  u16 size;
 } TSprite;
 
 extern TSprite spr_buffer[128];

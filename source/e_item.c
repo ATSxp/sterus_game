@@ -1,6 +1,5 @@
 #include "e_item.h"
-
-#include "gfx_items.h"
+#include "gfx.h"
 
 Item g_items[ITEM_MAX] = {0};
 u8 spawns = 0;
@@ -12,13 +11,13 @@ INLINE void E_ItemVsPlayer(Item *i, Player *p);
 
 const ItemTemplate g_items_template[ITEM_TOTAL] = {
   {
-    ITEM_TID_BASE, 0, OBJ_16X16, 
+    ITEM_TID, 0, OBJ_16X16, 
     16, 16, 
     SET_GFX_OBJ(FALSE, gfx_items), 
     E_getGun
   }, 
   {
-    ITEM_TID_BASE + 4, 0, OBJ_16X16, 
+    ITEM_TID + 4, 0, OBJ_16X16, 
     16, 16, 
     NULL, 
     E_getHealth

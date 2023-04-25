@@ -4,8 +4,7 @@
 #include "e_item.h"
 #include "e_player.h"
 
-#include "gfx_hp_p.h"
-#include "gfx_items.h"
+#include "gfx.h"
 
 #define HUD_CBB 0
 #define HUD_SBB 31
@@ -24,7 +23,7 @@ void initHud(Player p) {
 
   icon_inv = T_addObj(
       SCREEN_WIDTH - 16, SCREEN_HEIGHT - 16, 
-      OBJ_16X16, ITEM_TID_BASE, 0, 0, 
+      OBJ_16X16, ITEM_TID, 0, 0, 
       SET_GFX_OBJ(FALSE, gfx_items)
     );
 }
@@ -59,7 +58,7 @@ void updateHud(Player p) {
 
   if (g_inv_p[g_inv_cursor] != 0) {
     T_showObj(icon_inv);
-    T_setTileObj(icon_inv, ITEM_TID_BASE + (g_inv_cursor != 0 ? 4 << g_inv_cursor : 4 ));
+    T_setTileObj(icon_inv, ITEM_TID + (g_inv_cursor != 0 ? 4 << g_inv_cursor : 4 ));
   } else
     T_hideObj(icon_inv);
 

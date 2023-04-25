@@ -3,45 +3,25 @@
 
 #include "engine/gba.h"
 
-#define GET_ANIM(id) g_anims[id]
-
-enum AnimId{
-  ANIM_SHIP_IDLE,
-  ANIM_SHIP_WALK,
-  ANIM_E_COMMON_WALK,
-  ANIM_DEATH,
-  ANIM_TOTAL
-};
-
 typedef struct {
-  cu16 *frames;
-  FIXED speed;
-  BOOL loop;
-  u32 length;
-  u16 offset_tid;
-  int cur_frame;
-  FIXED ticks;
-  BOOL end;
+  FIXED tick, speed;
+  BOOL loop, end;
+  u16 cur_frame;
+  u16 offset, len, size;
 } Anim;
 
-extern cu16* g_anims[ANIM_TOTAL];
-
-INLINE void A_initAnim(Anim *a, cu16 *frames, u32 length, FIXED speed, BOOL loop, u16 offset_tid);
+INLINE void A_setAnimSpeed(Anim *a, FIXED speed);
 INLINE void A_resetAnim(Anim *a);
 
 void A_updateAnim(Anim *a, TSprite *spr);
+void A_setAnim(Anim *a, u16 offset_tid, u16 len, BOOL loop, TGfx *gfx, u16 pb);
 
-INLINE void A_initAnim(Anim *a, cu16 *frames, u32 length, FIXED speed, BOOL loop, u16 offset_tid) {
-  a->frames = frames;
-  a->length = length;
-  a->speed = speed;
-  a->loop = loop;
-  a->offset_tid = offset_tid;
-}
+INLINE void A_setAnimSpeed(Anim *a, FIXED speed) 
+{ a->speed = speed; }
 
 INLINE void A_resetAnim(Anim *a) {
+  a->tick = 0x00;
   a->cur_frame = 0;
-  a->ticks = 0x00;
   a->end = FALSE;
 }
 

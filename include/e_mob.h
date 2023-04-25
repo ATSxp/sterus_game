@@ -31,7 +31,7 @@ typedef struct {
   BOOL dead : TRUE;
 
   TSprite *spr;
-  Anim anims[3];
+  Anim anim;
 
   // Bullets
   Bullet bull[10];
@@ -55,9 +55,9 @@ struct MobTemplate {
 
 extern const struct MobTemplate g_mob_template[MOB_TOTAL];
 extern Mob g_mobs[MOB_MAX];
+extern u8 g_mob_count;
 
 INLINE void E_updateAllMobs();
-INLINE void E_removeMob(Mob *m);
 INLINE void E_clearAllMobs();
 
 void E_initMob(enum MobIds id, int x, int y, u16 move_type);
@@ -75,14 +75,6 @@ INLINE void E_clearAllMobs() {
   int ii;
   for (ii = 0; ii < MOB_MAX; ii++) {
     REM_SPR(g_mobs[ii].spr);
-  }
-
-}
-
-INLINE void E_removeMob(Mob *m) {
-  if (!m->dead) {
-    m->dead = TRUE;
-    m->state = MOB_STATE_DEAD;
   }
 
 }

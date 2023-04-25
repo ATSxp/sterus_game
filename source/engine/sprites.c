@@ -4,8 +4,7 @@
 
 TSprite spr_buffer[128];
 
-u8 g_spr_count;
-u8 g_unussed_ids_count;
+u8 g_spr_count, g_unussed_ids_count;
 u8 unussed_ids[128];
 
 int sort_keys[128];
@@ -73,7 +72,7 @@ TSprite *T_addObj(int x, int y, u16 size, u16 tid, u16 pb, u16 prio, TGfx *gfx) 
 
   _setGfxObj(spr, gfx, tid);
 
-  obj->attr0 = _getShapeFromSize(size);
+  obj->attr0 = _getShapeFromSize(spr->size = size);
   obj->attr1 = (size << ATTR1_SIZE_SHIFT);
   obj->attr2 = ATTR2_BUILD(tid, pb, prio);
 
@@ -93,12 +92,11 @@ void T_removeObj(TSprite *spr) {
   spr->obj = (OBJ_ATTR){0, 0, 0, 0};
   obj_hide(&spr->obj);
 
-  if (g_spr_count > 0)
-    g_spr_count--;
+  g_spr_count--;
 }
 
 void T_updateObjs(BOOL sort) {
-  u32 ii;
+  int ii;
   int *keys = sort_keys;
   TSprite *spr = spr_buffer;
   OBJ_ATTR *obj;
@@ -128,6 +126,7 @@ void T_updateObjs(BOOL sort) {
     for (ii = 0; ii < SPR_MAX; ii++)
       oam_copy(&oam_mem[ii], &spr_buffer[ii].obj, 1);
 
+  g_spr_count = clamp(g_spr_count, 0, SPR_MAX + 1);
 }
 
 BOOL T_objVsObj(TSprite *s, TSprite *s2) {

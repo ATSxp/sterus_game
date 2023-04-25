@@ -1,37 +1,50 @@
 #include "anim.h"
-
-#define LEN_F(l) (cu16[l])
+#include "engine/sprites.h"
 
 void A_updateAnim(Anim *a, TSprite *spr) {
-  if (!a) {
-    BFN_SET(spr->obj.attr2, a->offset_tid, ATTR2_ID);
-    return;
-  }
+  u16 tids;
 
-  if (a->cur_frame >= (a->length - 1)) {
+  if (!a || !spr) return;
+
+  if (a->cur_frame >= (a->len - 1)) {
     a->end = TRUE;
-  } else {
+    if (!a->loop) return;
+  } else
     a->end = FALSE;
+
+  a->size = spr->size;
+  a->tick += a->speed;
+
+  switch (a->size) {
+  case OBJ_16X16:
+    tids = 4;
+    break;
+  default:
+    tids = 1;
+    break;
   }
 
-  a->ticks += a->speed;
-
-  if (a->ticks >= 0x0800) {
-    a->ticks = 0x00;
-
+  if (a->tick >= 0x0800) {
+    a->tick = 0x00;
     if (a->loop)
-      a->cur_frame = (a->cur_frame + 1) % a->length;
+      a->cur_frame = (a->cur_frame + 1) % a->len;
     else
-      a->cur_frame = clamp(a->cur_frame + 1, 0, a->length);
+      a->cur_frame = clamp(a->cur_frame + 1, 0, a->len);
   }
 
-  BFN_SET(spr->obj.attr2, a->offset_tid + a->frames[a->cur_frame], ATTR2_ID);
+  BFN_SET(spr->obj.attr2, a->offset + (tids * a->cur_frame), ATTR2_ID);
 }
 
-// All animations of Mobs/Items/etc
-cu16 *g_anims[ANIM_TOTAL] = {
-  LEN_F(2){0, 4},
-  LEN_F(2){8, 12},
-  LEN_F(2){0, 4},
-  LEN_F(14){0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48},
-};
+void A_setAnim(Anim *a, u16 offset_tid, u16 len, BOOL loop, TGfx *gfx, u16 pb) {
+  if (!a) return;
+
+  a->offset = offset_tid;
+  a->len = len;
+  a->loop = loop;
+
+  if (gfx) {
+    tonccpy(pal_obj_bank[pb], gfx->pal, gfx->pal_len);
+    tonccpy(&tile_mem[4][offset_tid], gfx->tiles, gfx->tiles_len);
+  }
+
+}

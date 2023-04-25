@@ -8,8 +8,6 @@
 #define PLAYER_MAX_BULLET 8
 #define PLAYER_MAX_HP 8
 
-#define EXPLOSION_TID_BASE 128
-
 #define PLAYER_STATE_IDLE 0x00
 #define PLAYER_STATE_WALK 0x01
 #define PLAYER_STATE_DEAD 0x02
@@ -18,11 +16,11 @@ typedef struct {
   POINT32 pos;
   FIXED dx, dy;
   u32 w, h;
-  u32 hp;
+  int hp;
   TSprite *spr;
 
   Bullet b[PLAYER_MAX_BULLET];
-  Anim anims[3];
+  Anim anim;
 
   u8 state, i_health;
   FIXED imortal_t;

@@ -1,14 +1,8 @@
 #include "e_mob.h"
 #include "e_player.h"
 #include "e_item.h"
+#include "gfx.h"
 
-// Sprites sheets
-#include "gfx_enemys.h"
-#include "gfx_explo.h"
-#include "gfx_bullet_enemy.h"
-
-#define MOB_TID_BASE 16
-#define MOB_BULLET_TID_BASE 224
 #define MOB_SPEED_BASE 0x0300
 
 void E_initCommon(Mob *m);
@@ -30,7 +24,7 @@ const struct MobTemplate g_mob_template[MOB_TOTAL] = {
     Init Callback, Update Callback
   */
   {
-    MOB_TID_BASE, 0, OBJ_16X16, 
+    MOB_TID, 0, OBJ_16X16, 
     16, 16, 
     SET_GFX_OBJ(FALSE, gfx_enemys), 
     0, FALSE,
@@ -96,10 +90,7 @@ void E_initMob(enum MobIds id, int x, int y, u16 move_type) {
     m->dy = m->speed - 0x030;
   }
 
-  // Load explosion sprite-sheet on VRAM
-  tonccpy(&tile_mem[4][EXPLOSION_TID_BASE], gfx_exploTiles, gfx_exploTilesLen);
-
-  A_initAnim(&m->anims[MOB_STATE_DEAD], GET_ANIM(ANIM_DEATH), 14, 0x0480, FALSE, EXPLOSION_TID_BASE);
+  A_setAnimSpeed(&m->anim, 0x080);
 }
 
 void E_updateMob(Mob *m) {
@@ -115,25 +106,40 @@ void E_updateMob(Mob *m) {
       pt.y > SCREEN_HEIGHT))
     m->hp = 0;
 
-  if (m->hp <= 0)
-    E_removeMob(m);
-
-  A_updateAnim(&m->anims[m->state], m->spr);
+  A_updateAnim(&m->anim, m->spr);
 
   if (m->dead) {
-    if (m->anims[MOB_STATE_DEAD].end) {
+    if (m->anim.end && m->state == MOB_STATE_DEAD) {
       REM_SPR(m->spr);
 
       if (rnd != ITEM_TOTAL)
         E_initItem(rnd, pt.x, pt.y);
+
+      g_mob_count--;
+      return;
     }
+
+    m->state = MOB_STATE_DEAD;
+
+    A_setAnimSpeed(&m->anim, 0x0380);
+    A_setAnim(&m->anim, MOB_TID, 14, FALSE, SET_GFX_OBJ(FALSE, gfx_explo), 0);
+
     return;
   }
 
-  if (m->dx != 0x00 || m->dy != 0x00)
-    m->state = MOB_STATE_WALK;
+  if (m->dx != 0x00)
+    A_setAnim(&m->anim, MOB_TID + 8, 2, TRUE, NULL, 0);
   else
+    A_setAnim(&m->anim, MOB_TID, 2, TRUE, NULL, 0);
+
+  if (m->dx != 0x00 || m->dy != 0x00) {
+    m->state = MOB_STATE_WALK;
+  } else if (m->hp <= 0) {
+    m->dead = TRUE;
+    A_resetAnim(&m->anim);
+  } else {
     m->state = MOB_STATE_IDLE;
+  }
 
   E_mobVsPlayer(m, &g_player);
 
@@ -147,10 +153,6 @@ void E_updateMob(Mob *m) {
     g_mob_template[m->id].run(m);
 
   E_updateMove(m);
-
-  for (ii = 0; ii < 3; ii++)
-    if (ii != m->state)
-      A_resetAnim(&m->anims[ii]);
 
   m->pos.x += m->dx;
   m->pos.y += m->dy;
@@ -189,7 +191,7 @@ void E_updateBullet(Mob *m) {
 
       initGfxBullet(
           _b, OBJ_8X8, 
-          MOB_BULLET_TID_BASE, 
+          MOB_BULLET_TID, 
           0, 1, 
           SET_GFX_OBJ(FALSE, gfx_bullet_enemy)
         );
@@ -254,8 +256,6 @@ void E_updateMove(Mob *m) {
 */
 
 // Enemy Common
-void E_initCommon(Mob *m) {
-  A_initAnim(&m->anims[MOB_STATE_WALK], GET_ANIM(ANIM_E_COMMON_WALK), 2, 0x080, TRUE, MOB_TID_BASE);
-}
+void E_initCommon(Mob *m) {}
 
 void E_updateCommon(Mob *m) {}
